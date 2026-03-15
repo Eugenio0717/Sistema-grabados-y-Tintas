@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | Cigar Rings{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-0 text-gray-800">📊 Panel de Control Ejecutivo</h1>
+            <p class="text-muted">Bienvenido al nuevo sistema de gestión de Grabado y Tintas.</p>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Resumen Rápido -->
+    <div class="row">
+        <!-- Grabados Pendientes -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2 border-0" style="border-left: 5px solid #0d6efd !important;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Grabados en Proceso</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">12 Trabajos</div>
+                        </div>
+                        <div class="col-auto">
+                            <span style="font-size: 2rem;">🎨</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerta de Tintas -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2 border-0" style="border-left: 5px solid #ffc107 !important;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Alertas de Tintas</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">3 Bajos en Stock</div>
+                        </div>
+                        <div class="col-auto">
+                            <span style="font-size: 2rem;">⚠️</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Próximas Entregas -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2 border-0" style="border-left: 5px solid #198754 !important;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Entregas Hoy</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">5 Finalizados</div>
+                        </div>
+                        <div class="col-auto">
+                            <span style="font-size: 2rem;">✅</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensaje de Estado del Sistema -->
+    <div class="alert alert-info mt-4 border-0 shadow-sm" role="alert">
+        <h4 class="alert-heading">🚀 ¡Fase de Reconstrucción Activa!</h4>
+        <p>Estamos migrando los módulos de <b>Grabado</b> y <b>Tintas</b>. El diseño base ya está operativo.</p>
+        <hr>
+        <p class="mb-0">Usa el menú lateral para navegar entre las secciones.</p>
+    </div>
+</div>
+{% endblock %}
