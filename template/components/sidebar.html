@@ -3,7 +3,84 @@
 <!-- Overlay para oscurecer el fondo cuando el sidebar está abierto -->
 <div class="overlay" onclick="toggleSidebar()"></div>
 
+{% load static %}
 
+<!-- Overlay para oscurecer el fondo cuando el sidebar está abierto -->
+<div class="overlay" onclick="toggleSidebar()"></div>
+
+
+<!-- Barra lateral de navegación -->
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="logo">
+                <img src="{% static 'img/logo/Imagen1.png' %}" alt="Cigar Rings Logo">
+            </div>
+        </div>
+    </div>
+    <div class="sidebar-nav">
+        {% with request.resolver_match.url_name as url_name %}
+        <!-- Sección de panel principal -->
+        <div class="nav-section">
+            <div class="nav-section-title">Panel Principal</div>
+            <a href="{% url 'core:dashboard' %}" class="nav-item {% if url_name == 'dashboard' %}active{% endif %}">
+                <span class="nav-item-icon">📊</span>
+                <span>Dashboard Ejecutivo</span>
+            </a>
+        </div>
+        
+        <!-- Sección de operaciones con submenús -->
+        <div class="nav-section">
+            <div class="nav-section-title">Operaciones</div>
+            <!-- Submenú de Gestión de Grabados -->
+            {% url 'grabados:grabado_consulta' as grabado_consulta_url %}
+            <div class="nav-item-with-submenu">
+                <a href="#" class="nav-item {% if url_name == 'grabado_consulta' %}active{% endif %}" onclick="toggleSubmenu(this); return false;">
+                    <span class="nav-item-icon">🎨</span>
+                    <span>Gestión de Grabados</span>
+                    <span class="submenu-arrow">▼</span>
+                </a>
+                <div class="submenu">
+                    <a href="#" class="submenu-item">Estadísticas </a>
+                    <a href="{{ grabado_consulta_url }}" class="submenu-item {% if url_name == 'grabado_consulta' %}active{% endif %}">Tabla de Consultas</a>
+                    <a href="{#}" class="submenu-item {% if url_name == 'grabado_pendientes' %}active{% endif %}">Fabricación</a>
+                    <a href="#" class="submenu-item">Inventario</a>
+                </div>
+            </div>
+            <!-- Submenú de Gestión de Tintas -->
+            <div class="nav-item-with-submenu">
+                <a href="#" class="nav-item" onclick="toggleSubmenu(this); return false;">
+                    <span class="nav-item-icon">🖌️</span>
+                    <span>Gestión de Tintas</span>
+                    <span class="submenu-arrow">▼</span>
+                </a>
+                <div class="submenu">
+                    <a href="#" class="submenu-item">Inventario</a>
+                </div>
+            </div>
+            <!-- Submenú de Almacen -->
+            
+        </div>
+        
+        <!-- Sección de administración -->
+        <div class="nav-section">
+            <div class="nav-section-title">Administración</div>
+            <a href="#" class="nav-item">
+                <span class="nav-item-icon">⚙️</span>
+                <span>Configuración</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-item-icon">👥</span>
+                <span>Usuarios</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-item-icon">📋</span>
+                <span>Reportes</span>
+            </a>
+        </div>
+        {% endwith %}
+    </div>
+</nav>
 
 <!-- Barra lateral de navegación -->
 <nav class="sidebar">
@@ -55,14 +132,6 @@
                 <div class="submenu">
                     <a href="#" class="submenu-item">Inventario</a>
                 </div>
-            </div>
-            <!-- Submenú de Almacen -->
-            {% url 'almacen' as almacen_url %}
-            <div class="nav-item-with-submenu">
-                <a href="{{ almacen_url }}" class="nav-item {% if url_name == 'almacen' %}active{% endif %}">
-                    <span class="nav-item-icon">📦</span>
-                    <span>Almacen</span>
-                </a>
             </div>
         </div>
         
