@@ -1,0 +1,871 @@
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * grabados_tabla.css
+ * ───────────────────────────────────────────────────────────────
+ * Estilos para la tabla de Órdenes de Fabricación (OF)
+ * del módulo de Grabados en el sistema Cigar Rings.
+ *
+ * PREFIJO: Todas las clases usan el prefijo "gt-" para evitar
+ * conflictos con otros estilos del proyecto.
+ *
+ * ESTRUCTURA:
+ *  1.  Variables CSS
+ *  2.  Wrapper principal
+ *  3.  Barra superior (título)
+ *  4.  Toolbar (buscador y botones)
+ *  5.  Botones generales
+ *  6.  Panel selector de columnas (···)
+ *  7.  Tabla
+ *  8.  Estilos de celda (badges, máquina, ubicación, etc.)
+ *  9.  Botones de acción por fila (Ver, Editar, Eliminar)
+ *  10. Footer (paginación e info)
+ *  11. Exportar
+ *  12. Filtro de fechas
+ *  13. Resaltado de búsqueda
+ *  14. Estado vacío
+ *  15. Responsive
+ * ═══════════════════════════════════════════════════════════════
+ */
+
+
+/* ══════════════════════════════════════════════
+   1. VARIABLES CSS
+   ══════════════════════════════════════════════
+   Paleta de colores del módulo de grabados.
+   Cambiar aquí afecta toda la tabla.
+   Se definen dentro de :root para que estén
+   disponibles globalmente en el componente.
+*/
+:root {
+  --gt-green:        #2d8a3e;  /* Verde principal: encabezado, botón primario, links */
+  --gt-green-dark:   #1e6b2e;  /* Verde oscuro: hover, textos de énfasis */
+  --gt-green-light:  #f0f9f4;  /* Verde muy claro: fondos de paneles, hover de filas */
+  --gt-border:       #e4ede7;  /* Color del borde de la tabla y separadores */
+  --gt-text:         #2c3e35;  /* Color del texto principal */
+  --gt-muted:        #7a9485;  /* Color del texto secundario/apagado */
+  --gt-bg:           #ffffff;  /* Fondo blanco de la tabla */
+  --gt-hover:        #f5fbf7;  /* Fondo de filas al hacer hover */
+}
+
+
+/* ══════════════════════════════════════════════
+   2. WRAPPER PRINCIPAL
+   ══════════════════════════════════════════════
+   Contenedor que agrupa toda la tabla.
+   Usa flexbox vertical para que la tabla ocupe
+   el espacio disponible y el scroll sea interno
+   (solo se mueve el contenido, no la página).
+*/
+.gt-wrap {
+  background: var(--gt-bg);
+  border: 1px solid var(--gt-border);
+  border-radius: 12px;
+  width: 100%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+
+  /**
+   * Altura = pantalla completa menos el header del sidebar y el padding del body.
+   * Si el header del sidebar cambia de altura, actualizar --sb-header-height en sidebar.css
+   * o ajustar el valor fijo aquí.
+   */
+  height: calc(100vh - var(--sb-header-height, 60px) - 48px);
+  overflow: hidden; /* El scroll se maneja internamente en .gt-table-wrap */
+}
+
+
+/* ══════════════════════════════════════════════
+   3. BARRA SUPERIOR (TÍTULO)
+   ══════════════════════════════════════════════
+   Fila superior con el título de la tabla.
+*/
+.gt-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid var(--gt-border);
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0; /* No se comprime cuando la tabla tiene poco espacio vertical */
+}
+
+.gt-topbar-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--gt-text);
+}
+
+/* Ícono de tabla al lado del título */
+.gt-topbar-title svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--gt-green);
+  fill: none;
+  flex-shrink: 0;
+}
+
+
+/* ══════════════════════════════════════════════
+   4. TOOLBAR
+   ══════════════════════════════════════════════
+   Barra de herramientas con buscador y botones.
+   Usa flex-wrap para que en pantallas pequeñas
+   los botones se vayan a la línea siguiente.
+*/
+.gt-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--gt-border);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+/* Contenedor del campo de búsqueda */
+.gt-search-wrap {
+  position: relative; /* Para posicionar el ícono de lupa absolutamente */
+  flex: 1;            /* Ocupa todo el espacio disponible */
+  min-width: 200px;
+}
+
+/* Ícono de lupa posicionado dentro del input */
+.gt-search-wrap svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  stroke: var(--gt-muted);
+  fill: none;
+  pointer-events: none; /* No intercepta clicks del usuario */
+}
+
+/* Input de búsqueda */
+.gt-search-wrap input {
+  width: 100%;
+  padding: 8px 10px 8px 34px; /* Espacio a la izquierda para el ícono de lupa */
+  border: 1px solid var(--gt-border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--gt-text);
+  background: #f8fbf9;
+  outline: none;
+}
+
+/* Estado focus: borde verde + fondo blanco + anillo verde suave */
+.gt-search-wrap input:focus {
+  border-color: var(--gt-green);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(45,138,62,0.08);
+}
+
+.gt-search-wrap input::placeholder { color: var(--gt-muted); }
+
+
+/* ══════════════════════════════════════════════
+   5. BOTONES GENERALES
+   ══════════════════════════════════════════════
+   Estilo base compartido por todos los botones
+   de la toolbar. Variante --primary para el
+   botón "Nueva OF".
+*/
+.gt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 13px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--gt-border);
+  background: var(--gt-bg);
+  color: var(--gt-text);
+  white-space: nowrap;
+  transition: all 0.18s;
+  text-decoration: none; /* Para cuando se use como <a> */
+}
+
+.gt-btn svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  fill: none;
+  flex-shrink: 0;
+}
+
+.gt-btn:hover {
+  background: var(--gt-hover);
+  border-color: #b7dfbf;
+  color: var(--gt-green-dark);
+}
+
+/* Variante primaria: fondo verde, texto blanco */
+.gt-btn--primary {
+  background: var(--gt-green);
+  color: #fff;
+  border-color: var(--gt-green);
+}
+
+.gt-btn--primary:hover {
+  background: var(--gt-green-dark);
+  border-color: var(--gt-green-dark);
+  color: #fff;
+}
+
+
+/* ══════════════════════════════════════════════
+   6. PANEL SELECTOR DE COLUMNAS (···)
+   ══════════════════════════════════════════════
+   Dropdown que aparece al hacer click en "···".
+   Permite mostrar/ocultar columnas y reordenarlas
+   con drag & drop.
+*/
+
+/* Contenedor posicionador del dropdown */
+.gt-col-wrap { position: relative; }
+
+/* Botón "···" */
+.gt-col-btn {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 2px; /* Separa los tres puntos visualmente */
+  padding: 5px 11px;
+  color: var(--gt-green-dark);
+}
+
+/* Panel desplegable */
+.gt-col-panel {
+  display: none; /* Oculto por defecto, JS agrega .open para mostrarlo */
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0; /* Alineado a la derecha del botón */
+  background: #fff;
+  border: 1px solid var(--gt-border);
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  width: 215px;
+  z-index: 200; /* Por encima de la tabla y otros elementos */
+  overflow: hidden;
+}
+
+.gt-col-panel.open { display: block; }
+
+/* Encabezado del panel con título y botón "Restablecer" */
+.gt-col-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--gt-border);
+  background: var(--gt-green-light); /* Fondo verde suave */
+}
+
+.gt-col-head span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gt-green-dark);
+}
+
+/* Botón "Restablecer" dentro del panel */
+.gt-col-reset {
+  font-size: 11px;
+  color: var(--gt-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.gt-col-reset:hover { background: #e0f0e5; color: var(--gt-green-dark); }
+
+/* Lista scrolleable de columnas */
+.gt-col-list {
+  padding: 6px 0;
+  max-height: 280px;
+  overflow-y: auto; /* Scroll si hay muchas columnas */
+}
+
+/* Fila de una columna en el panel */
+.gt-col-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  cursor: default;
+  transition: background 0.15s;
+}
+.gt-col-opt:hover { background: var(--gt-hover); }
+
+/* Checkbox de visibilidad */
+.gt-col-opt input {
+  accent-color: var(--gt-green);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Etiqueta del nombre de la columna */
+.gt-col-opt label {
+  font-size: 12.5px;
+  color: var(--gt-text);
+  cursor: pointer;
+  flex: 1;
+}
+
+/* Columnas fijas: etiqueta más gris */
+.gt-col-locked label { color: var(--gt-muted); }
+
+/* Badge "fijo" para columnas que no se pueden mover ni ocultar */
+.gt-lock-tag {
+  font-size: 9px;
+  background: #eee;
+  color: #888;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/**
+ * Handle de arrastre (4 líneas horizontales ≡).
+ * Solo visible en columnas no fijas.
+ * opacity baja por defecto, sube al hacer hover en la fila.
+ */
+.gt-drag-handle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 3px;
+  cursor: grab;
+  flex-shrink: 0;
+  opacity: 0.35;
+  transition: opacity 0.15s;
+}
+.gt-drag-handle:active { cursor: grabbing; }
+.gt-col-opt:hover .gt-drag-handle { opacity: 0.7; }
+
+/* Cada línea del handle de arrastre */
+.gt-drag-handle span {
+  display: block;
+  width: 12px;
+  height: 1.5px;
+  background: var(--gt-text);
+  border-radius: 1px;
+}
+
+/* Columna que se está arrastrando: semitransparente */
+.gt-col-opt.gt-dragging { opacity: 0.4; background: var(--gt-hover); }
+
+/* Línea verde que indica dónde se soltará la columna */
+.gt-col-opt.gt-drag-over { border-top: 2px solid var(--gt-green); }
+
+
+/* ══════════════════════════════════════════════
+   7. TABLA
+   ══════════════════════════════════════════════
+*/
+
+/**
+ * Contenedor de la tabla con scroll doble:
+ * - overflow-x: scroll horizontal para columnas que no caben
+ * - overflow-y: scroll vertical para filas (solo el contenido se mueve)
+ * - flex:1 + min-height:0: ocupa el espacio disponible entre toolbar y footer
+ */
+.gt-table-wrap {
+  overflow-x: auto;
+  overflow-y: auto;
+  width: 100%;
+  flex: 1;
+  min-height: 0; /* Necesario para que flexbox respete overflow-y */
+}
+
+/* La tabla ocupa todo el ancho del contenedor */
+.gt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+/* Fondo verde para el encabezado */
+.gt-table thead tr { background: var(--gt-green); }
+
+/**
+ * Celdas del encabezado.
+ * position:sticky + top:0 hace que el encabezado se quede
+ * fijo al hacer scroll vertical dentro de .gt-table-wrap.
+ * z-index:10 para que quede por encima del contenido al scrollear.
+ */
+.gt-table thead th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.92);
+  white-space: nowrap; /* Evita que el texto del encabezado se parta */
+  border: none;
+  cursor: pointer; /* Indica que se puede hacer click para ordenar */
+  transition: background 0.15s;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--gt-green); /* Repetido para que sticky funcione correctamente */
+}
+
+/* Efecto hover en encabezados al pasar el mouse */
+.gt-table thead th:hover { background: rgba(255,255,255,0.08); }
+
+/* Ícono de ordenamiento (flechas) en los encabezados */
+.gt-table thead th svg {
+  display: inline;
+  width: 9px;
+  height: 9px;
+  stroke: rgba(255,255,255,0.5);
+  fill: none;
+  margin-left: 4px;
+  vertical-align: middle;
+  transition: all 0.2s; /* Animación suave al cambiar el ícono */
+}
+
+/* Encabezado de la columna actualmente ordenada */
+.gt-table thead th.gt-sorted { background: rgba(255,255,255,0.12); }
+
+/* Filas del cuerpo */
+.gt-table tbody tr { border-bottom: 1px solid var(--gt-border); }
+.gt-table tbody tr:last-child { border-bottom: none; }
+.gt-table tbody tr:hover { background: var(--gt-hover); }
+
+/* Celdas del cuerpo */
+.gt-table tbody td {
+  padding: 12px 14px;
+  color: var(--gt-text);
+  vertical-align: middle; /* Centra verticalmente el contenido */
+}
+
+
+/* ══════════════════════════════════════════════
+   8. ESTILOS DE CELDA
+   ══════════════════════════════════════════════
+   Estilos específicos para el contenido de
+   cada tipo de celda.
+*/
+
+/* Número de OF: enlace verde en negrita */
+.gt-of-link { color: var(--gt-green); font-weight: 700; text-decoration: none; }
+.gt-of-link:hover { color: var(--gt-green-dark); text-decoration: underline; }
+
+/* OF Referencia */
+.gt-of-ref { font-weight: 600; color: var(--gt-green-dark); }
+
+/* Nombre del cliente */
+.gt-client { font-weight: 600; }
+
+/**
+ * Descripción truncada con puntos suspensivos.
+ * El atributo title del span muestra el texto completo al hacer hover.
+ * max-width limita el ancho para no expandir demasiado la columna.
+ */
+.gt-desc {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block; /* Necesario para que text-overflow funcione */
+}
+
+/* Badge de máquina: verde suave con borde */
+.gt-machine {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: #e8f5ee;
+  color: var(--gt-green-dark);
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid #c3dfc9;
+}
+
+/**
+ * Badge de estado: píldora de color según el estado.
+ * El color se asigna con una clase adicional (gt-b-pend, etc.)
+ * que se aplica dinámicamente desde JS según GT_ESTADO_CLASS.
+ */
+.gt-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: 20px; /* Forma de píldora */
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer; /* Indica que se puede hacer click para cambiar estado */
+  border: none;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+/* Efecto hover en badges: ligeramente más pequeño */
+.gt-badge:hover { opacity: 0.85; transform: scale(1.03); }
+
+/* Colores por estado */
+.gt-b-pend { background: #fff3cd; color: #856404; } /* Amarillo: Pendiente   */
+.gt-b-comp { background: #d1e7dd; color: #0a5c36; } /* Verde:   Completado   */
+.gt-b-proc { background: #cfe2ff; color: #084298; } /* Azul:    En Proceso   */
+.gt-b-canc { background: #f8d7da; color: #842029; } /* Rojo:    Cancelado    */
+.gt-b-rev  { background: #e2d9f3; color: #4a2b8c; } /* Morado:  En Revisión  */
+
+/* Celda de ubicación: ícono de pin + texto gris */
+.gt-loc {
+  font-size: 12px;
+  color: var(--gt-muted);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Ícono de pin SVG dentro de la ubicación */
+.gt-loc svg {
+  width: 11px;
+  height: 11px;
+  stroke: var(--gt-muted);
+  fill: none;
+  flex-shrink: 0;
+}
+
+
+/* ══════════════════════════════════════════════
+   9. BOTONES DE ACCIÓN POR FILA
+   ══════════════════════════════════════════════
+   Botones Ver (azul), Editar (verde), Eliminar (rojo)
+   que aparecen en la columna "Acciones" de cada fila.
+*/
+.gt-actions { display: flex; gap: 5px; }
+
+/* Estilo base de cada botón de acción */
+.gt-abtn {
+  width: 29px;
+  height: 29px;
+  border-radius: 7px;
+  border: 1px solid var(--gt-border);
+  background: var(--gt-bg);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  text-decoration: none;
+  color: var(--gt-muted);
+}
+
+.gt-abtn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
+
+/* Efecto hover: sube ligeramente */
+.gt-abtn:hover { transform: translateY(-1px); }
+
+/* Ver: azul claro */
+.gt-abtn--view  { border-color: #b8d4f7; color: #1a5fa8; }
+.gt-abtn--view:hover  { background: #e8f1fd; }
+
+/* Editar: verde */
+.gt-abtn--edit  { border-color: #b7dfbf; color: var(--gt-green-dark); }
+.gt-abtn--edit:hover  { background: var(--gt-green-light); }
+
+/* Eliminar: rojo */
+.gt-abtn--delete { border-color: #f5c6c6; color: #c0392b; }
+.gt-abtn--delete:hover { background: #fdf0f0; }
+
+
+/* ══════════════════════════════════════════════
+   10. FOOTER
+   ══════════════════════════════════════════════
+   Barra inferior con información del rango visible
+   y botones de paginación.
+*/
+.gt-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-top: 1px solid var(--gt-border);
+  background: #fafcfb; /* Ligeramente diferente al blanco puro */
+  flex-wrap: wrap;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Texto "Mostrando 1–10 de 100 registros" */
+.gt-footer-info { font-size: 12.5px; color: var(--gt-muted); }
+.gt-footer-info strong { color: var(--gt-text); }
+
+/* Contenedor de botones de paginación */
+.gt-pagination { display: flex; align-items: center; gap: 4px; }
+
+/* Botón de página individual */
+.gt-pg {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--gt-border);
+  background: var(--gt-bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  color: var(--gt-text);
+  transition: all 0.15s;
+}
+.gt-pg:hover { background: var(--gt-hover); border-color: #b7dfbf; }
+
+/* Página activa: fondo verde */
+.gt-pg--active { background: var(--gt-green); color: #fff; border-color: var(--gt-green); }
+
+/* Flechas de navegación anterior/siguiente */
+.gt-pg svg { width: 12px; height: 12px; stroke: currentColor; fill: none; }
+
+
+/* ══════════════════════════════════════════════
+   11. EXPORTAR
+   ══════════════════════════════════════════════
+   Dropdown con opciones de exportación (CSV/Excel).
+*/
+.gt-export-wrap { position: relative; }
+
+/* Botón activo (panel abierto): fondo verde suave */
+.gt-export-btn.active {
+  background: var(--gt-green-light);
+  border-color: #b7dfbf;
+  color: var(--gt-green-dark);
+}
+
+/* Panel desplegable de exportación */
+.gt-export-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #fff;
+  border: 1px solid var(--gt-border);
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  width: 220px;
+  z-index: 200;
+  overflow: hidden;
+}
+.gt-export-panel.open { display: block; }
+
+/* Opción de exportación (CSV / Excel) */
+.gt-export-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gt-text);
+}
+.gt-export-opt:hover { background: var(--gt-hover); }
+
+/* Ícono dentro de cada opción */
+.gt-export-opt svg { width: 16px; height: 16px; stroke: var(--gt-green); fill: none; flex-shrink: 0; }
+
+/* Subtítulo de cada opción (ej: "Compatible con Excel") */
+.gt-export-desc {
+  display: block;
+  font-size: 10.5px;
+  color: var(--gt-muted);
+  font-weight: 400;
+  margin-top: 1px;
+}
+
+/* Separador entre opciones e info de registros */
+.gt-export-divider { height: 1px; background: var(--gt-border); margin: 4px 0; }
+
+/* Texto informativo "Exportará X registros" */
+.gt-export-info { padding: 8px 14px 10px; font-size: 11.5px; color: var(--gt-muted); }
+.gt-export-info strong { color: var(--gt-green); }
+
+
+/* ══════════════════════════════════════════════
+   12. FILTRO DE FECHAS
+   ══════════════════════════════════════════════
+   Panel con dos inputs de fecha (Desde / Hasta)
+   para filtrar la tabla por rango de fechas.
+*/
+.gt-date-wrap { position: relative; }
+
+/* Botón activo: fondo verde suave cuando el filtro está en uso */
+.gt-date-btn.active {
+  background: var(--gt-green-light);
+  border-color: #b7dfbf;
+  color: var(--gt-green-dark);
+}
+
+/* Panel desplegable del calendario */
+.gt-date-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #fff;
+  border: 1px solid var(--gt-border);
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  width: 260px;
+  z-index: 200;
+  overflow: hidden;
+}
+.gt-date-panel.open { display: block; }
+
+/* Encabezado del panel con título y botón Limpiar */
+.gt-date-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--gt-border);
+  background: var(--gt-green-light);
+}
+.gt-date-head span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gt-green-dark);
+}
+
+/* Cuerpo del panel con los dos campos de fecha */
+.gt-date-body { padding: 14px; }
+
+/* Contenedor de cada campo (Desde / Hasta) */
+.gt-date-field { margin-bottom: 10px; }
+.gt-date-field:last-child { margin-bottom: 0; }
+
+/* Etiqueta del campo de fecha */
+.gt-date-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gt-muted);
+  margin-bottom: 5px;
+}
+
+/* Input de fecha */
+.gt-date-field input[type=date] {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--gt-border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--gt-text);
+  background: #f8fbf9;
+  outline: none;
+  cursor: pointer;
+}
+.gt-date-field input[type=date]:focus {
+  border-color: var(--gt-green);
+  background: #fff;
+}
+
+/* Espacio para el botón "Aplicar filtro" */
+.gt-date-footer { padding: 0 14px 14px; }
+
+
+/* ══════════════════════════════════════════════
+   13. RESALTADO DE BÚSQUEDA
+   ══════════════════════════════════════════════
+   Estilo del <mark> que envuelve las coincidencias
+   del buscador dentro del texto de cada celda.
+*/
+.gt-mark {
+  background: #fff176; /* Amarillo resaltador */
+  color: #5a4000;       /* Texto oscuro para contraste */
+  border-radius: 3px;
+  padding: 0 2px;
+  font-weight: 700;
+}
+
+
+/* ══════════════════════════════════════════════
+   14. ESTADO VACÍO
+   ══════════════════════════════════════════════
+   Mensaje centrado cuando no hay resultados.
+   Se puede usar en el <td colspan> del <tbody>.
+*/
+.gt-empty {
+  text-align: center;
+  padding: 56px 20px;
+  color: var(--gt-muted);
+  font-size: 14px;
+}
+
+
+/* ══════════════════════════════════════════════
+   15. RESPONSIVE
+   ══════════════════════════════════════════════
+   En pantallas pequeñas (móvil), la tabla se
+   convierte en tarjetas apiladas verticalmente.
+   Cada celda muestra su etiqueta a la izquierda
+   (data-label) y el valor a la derecha.
+*/
+@media (max-width: 600px) {
+  /* Ocultar encabezado: las etiquetas vienen del data-label */
+  .gt-table thead { display: none; }
+
+  /* Cada fila se convierte en una tarjeta */
+  .gt-table tbody tr {
+    display: block;
+    margin-bottom: 10px;
+    border: 1px solid var(--gt-border);
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  /* Cada celda en una fila horizontal con label y valor */
+  .gt-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 4px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 12.5px;
+  }
+
+  .gt-table tbody td:last-child { border-bottom: none; }
+
+  /* Etiqueta generada desde el atributo data-label del td */
+  .gt-table tbody td::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gt-muted);
+    flex-shrink: 0;
+    margin-right: 10px;
+  }
+
+  /* Toolbar en columna en móvil */
+  .gt-toolbar { flex-direction: column; align-items: stretch; }
+
+  /* Buscador ocupa todo el ancho */
+  .gt-search-wrap { min-width: 100%; }
+}
