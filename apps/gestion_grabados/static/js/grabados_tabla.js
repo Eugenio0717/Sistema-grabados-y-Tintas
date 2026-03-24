@@ -181,30 +181,12 @@ let gtSortDir = 'asc';
 */
 
 /**
- * Array principal con todos los registros de OF.
- * Cada objeto representa una Orden de Fabricación con sus campos.
- *
- * INTEGRACIÓN CON DJANGO:
- * Reemplazar esta línea en el template con:
- *   const GT_DATA = {{ grabados_json|safe }};
- *
- * En la view de Django serializar el queryset así:
- *   import json
- *   grabados_json = json.dumps([{
- *     'of':        str(g.of_numero),
- *     'ref':       str(g.of_referencia),
- *     'desc':      g.descripcion or '',
- *     'cliente':   str(g.cliente),
- *     'tipo':      g.tipo_grabado.nombre,
- *     'proceso':   g.proceso.nombre,
- *     'maquina':   g.maquina.nombre,
- *     'estado':    g.estado.nombre,
- *     'fecha':     g.fecha_programacion.strftime('%d/%m/%Y'),
- *     'ubicacion': g.ubicacion or '—',
- *     'sobre':     g.sobre or '—',
- *   } for g in grabados], ensure_ascii=False)
+ * Los datos se inyectan desde el HTML usando Django.
+ * Si no hay datos, inicializamos con un array vacío para evitar errores.
  */
-const GT_DATA = []; /* ← Reemplazar con: {{ grabados_json|safe }} */
+if (typeof GT_DATA === 'undefined') {
+  window.GT_DATA = [];
+}
 
 
 /* ══════════════════════════════════════════════
