@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Programación Mensual (Plani) | CIGAR RINGS{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/grabados_tabla.css' %}">
+<style>
+    /* Estilo específico para resaltar que es la tabla de Plani */
+    .tabla-cabecera {
+        background: linear-gradient(135deg, #1e5d2b 0%, #2d8a3e 100%);
+    }
+    .boton--actualizar-plani {
+        background-color: #f39c12;
+        color: white;
+    }
+    .boton--actualizar-plani:hover {
+        background-color: #e67e22;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tabla-contenedor">
+
+    <!-- CABECERA -->
+    <div class="tabla-cabecera">
+      <div class="tabla-cabecera__titulo">
+        <svg viewBox="0 0 24 24" stroke-width="2">
+          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+          <polyline points="13 2 13 9 20 9"/>
+        </svg>
+        Programación Mensual de Producción (PLANI)
+      </div>
+    </div>
+
+    <!-- BARRA DE HERRAMIENTAS -->
+    <div class="tabla-barra-herramientas">
+      <div class="buscador-contenedor">
+        <svg viewBox="0 0 24 24" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" id="buscador-input" placeholder="Buscar en la programación...">
+      </div>
+
+      <!-- BOTÓN DE SINCRONIZACIÓN -->
+      <button class="boton boton--actualizar-plani" id="btn-sincronizar" onclick="sincronizarConExcel()">
+        <svg viewBox="0 0 24 24" stroke-width="2">
+          <path d="M21 2v6h-6"/>
+          <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+          <path d="M3 22v-6h6"/>
+          <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+        </svg>
+        Actualizar desde Excel (Plani)
+      </button>
+
+      <!-- EXPORTAR -->
+      <div class="exportar-contenedor">
+        <button class="boton boton--exportar" id="boton-exportar" onclick="alternarExportar()">
+          <svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar
+        </button>
+      </div>
+    </div>
+
+    <!-- ÁREA DE LA TABLA -->
+    <div class="tabla-area-datos">
+      <table class="tabla-registros" id="tabla-registros">
+        <thead>
+          <tr>
+            <th data-col="of">ORDEN</th>
+            <th data-col="ref">REFERENCIA</th>
+            <th data-col="cliente">CLIENTE</th>
+            <th data-col="proceso">PROCESO</th>
+            <th data-col="horas">HORAS</th>
+            <th data-col="papel">PAPEL</th>
+            <th data-col="formatos">FORMATOS</th>
+            <th data-col="responsable">RESPONSABLE</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-cuerpo">
+            <!-- Los datos del Excel se cargarán aquí -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PIE DE TABLA -->
+    <div class="tabla-pie">
+      <div class="tabla-pie__info" id="pie-info"></div>
+      <div class="tabla-pie__paginacion" id="pie-paginacion"></div>
+    </div>
+
+</div>
+
+<!-- MODAL DE MAPEO DE COLUMNAS -->
+<div id="modal-mapeo" class="modal-personalizado" style="display:none;">
+    <div class="modal-contenido">
+        <div class="modal-cabecera">
+            <h3>Configurar Columnas del Excel</h3>
+            <p>Selecciona a qué columna de la tabla corresponde cada encabezado de tu Excel.</p>
+        </div>
+        <div class="modal-cuerpo">
+            <!-- Selector de Hoja -->
+            <div class="mapeo-fila" style="background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;">
+                <label style="color: #2d8a3e;">1. Seleccionar Hoja:</label>
+                <select id="selector-hoja" onchange="actualizarColumnasPorHoja()">
+                    <!-- Se llena dinámicamente -->
+                </select>
+            </div>
+
+            <!-- Previsualización de Datos -->
+            <div id="previsualizacion-excel" style="margin-bottom: 20px; overflow-x: auto; background: #fff; border: 1px solid #eee; border-radius: 8px; font-size: 11px;">
+                <!-- Se genera una mini tabla aquí -->
+            </div>
+            
+            <div id="contenedor-mapeo">
+                <!-- Los selectores de columnas se generarán aquí -->
+            </div>
+        </div>
+        <div class="modal-pie">
+            <button class="boton" onclick="cerrarModalMapeo()">Cancelar</button>
+            <button class="boton boton--primario" onclick="confirmarMapeo()">Confirmar y Cargar</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para el Modal de Mapeo */
+    .modal-personalizado {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 2000;
+    }
+    .modal-contenido {
+        background: white; padding: 25px; border-radius: 12px;
+        width: 90%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .modal-cabecera h3 { margin: 0 0 10px 0; color: #2d8a3e; }
+    .modal-cuerpo { margin: 20px 0; max-height: 400px; overflow-y: auto; }
+    .mapeo-fila { display: flex; align-items: center; margin-bottom: 12px; gap: 15px; }
+    .mapeo-fila label { flex: 1; font-weight: bold; color: #555; }
+    .mapeo-fila select { flex: 1.5; padding: 8px; border-radius: 6px; border: 1px solid #ddd; }
+    .modal-pie { display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #eee; pt: 15px; }
+</style>
+
+<!-- Input oculto para subir el Excel con mayor compatibilidad -->
+<input type="file" id="input-excel" style="display:none" 
+       accept=".xlsx, .xls, .csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
+       onchange="procesarArchivoExcel(event)">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="{% static 'js/plani_tabla.js' %}"></script>
+{% endblock %}

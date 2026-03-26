@@ -8,122 +8,240 @@
 {% endblock %}
 
 {% block content %}
-<div class="gt-wrap">
 
-  <div class="gt-topbar">
-    <div class="gt-topbar-title">
-      <svg viewBox="0 0 24 24" stroke-width="2" style="width:20px;height:20px;fill:none;stroke:currentColor;">
-        <rect x="3" y="3" width="18" height="18" rx="2"/>
-        <line x1="3" y1="9" x2="21" y2="9"/>
-        <line x1="3" y1="15" x2="21" y2="15"/>
-        <line x1="9" y1="9" x2="9" y2="21"/>
-      </svg>
-      Registro de Órdenes de Fabricación
-    </div>
-  </div>
+ 
+  <!--
+  ================================================================
+    CONTENEDOR PRINCIPAL (padre raíz del componente)
+  ================================================================
+  -->
+  <div class="tabla-contenedor">
 
-  <div class="gt-toolbar">
-    <div class="gt-search-wrap">
-      <svg viewBox="0 0 24 24" stroke-width="2" style="width:16px;height:16px;fill:none;stroke:currentColor;">
-        <circle cx="11" cy="11" r="8"/>
-        <path d="m21 21-4.35-4.35"/>
-      </svg>
-      <input type="text" id="gt-search" placeholder="Buscar por cliente, OF, descripción...">
-    </div>
 
-    <button class="gt-btn">
-      <svg viewBox="0 0 24 24" stroke-width="2" style="width:16px;height:16px;fill:none;stroke:currentColor;">
-        <line x1="4" y1="6" x2="20" y2="6"/>
-        <line x1="8" y1="12" x2="20" y2="12"/>
-        <line x1="12" y1="18" x2="20" y2="18"/>
-      </svg>
-      Filtros
-    </button>
+    <!-- ============================================================
+         CABECERA — Título del módulo
+    ============================================================ -->
+    <div class="tabla-cabecera">
 
-    <div class="gt-export-wrap">
-      <button class="gt-btn gt-export-btn" id="gt-export-btn" onclick="gtToggleExport()">
-        <svg viewBox="0 0 24 24" stroke-width="2" style="width:16px;height:16px;fill:none;stroke:currentColor;">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
+      <div class="tabla-cabecera__titulo">
+        <!-- Ícono de tabla -->
+        <svg viewBox="0 0 24 24" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="3" y1="15" x2="21" y2="15"/>
+          <line x1="9" y1="9" x2="9" y2="21"/>
         </svg>
-        Exportar
+        Registro de Órdenes de Fabricación
+      </div>
+
+    </div><!-- /tabla-cabecera -->
+
+
+    <!-- ============================================================
+         BARRA DE HERRAMIENTAS — Búsqueda, filtros y botones
+    ============================================================ -->
+    <div class="tabla-barra-herramientas">
+
+      <!-- Campo de búsqueda -->
+      <div class="buscador-contenedor">
+        <svg viewBox="0 0 24 24" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" id="buscador-input" placeholder="Buscar por cliente, OF, descripción...">
+      </div>
+
+      <!-- Botón Filtros (decorativo por ahora) -->
+      <button class="boton">
+        <svg viewBox="0 0 24 24" stroke-width="2">
+          <line x1="4" y1="6" x2="20" y2="6"/>
+          <line x1="8" y1="12" x2="20" y2="12"/>
+          <line x1="12" y1="18" x2="20" y2="18"/>
+        </svg>
+        Filtros
       </button>
 
-      <div class="gt-export-panel" id="gt-export-panel">
-        <button class="gt-export-opt" onclick="gtExport('csv')">Exportar CSV</button>
-        <button class="gt-export-opt" onclick="gtExport('excel')">Exportar Excel</button>
-        <div class="gt-export-divider"></div>
-        <div class="gt-export-info">Exportará <strong id="gt-export-count">0</strong> registros</div>
-      </div>
-    </div>
+      <!-- Dropdown: Exportar -->
+      <div class="exportar-contenedor">
+        <button class="boton boton--exportar" id="boton-exportar" onclick="alternarExportar()">
+          <svg viewBox="0 0 24 24" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Exportar
+          <svg viewBox="0 0 24 24" stroke-width="2" style="width:10px;height:10px;margin-left:2px">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
 
-    <div class="gt-date-wrap">
-      <button class="gt-btn gt-date-btn" id="gt-date-btn" onclick="gtToggleDatePanel()">
-        <svg viewBox="0 0 24 24" stroke-width="2" style="width:16px;height:16px;fill:none;stroke:currentColor;">
-          <rect x="3" y="4" width="18" height="18" rx="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
+        <!-- Panel de opciones de exportación -->
+        <div class="exportar-panel" id="exportar-panel">
+
+          <!-- Opción: CSV -->
+          <button class="exportar-opcion" onclick="exportarDatos('csv')">
+            <svg viewBox="0 0 24 24" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <div class="exportar-opcion__texto">
+              Exportar CSV
+              <span class="exportar-opcion__descripcion">Compatible con Excel</span>
+            </div>
+          </button>
+
+          <!-- Opción: Excel -->
+          <button class="exportar-opcion" onclick="exportarDatos('excel')">
+            <svg viewBox="0 0 24 24" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="3" y1="15" x2="21" y2="15"/>
+              <line x1="9" y1="9" x2="9" y2="21"/>
+            </svg>
+            <div class="exportar-opcion__texto">
+              Exportar Excel
+              <span class="exportar-opcion__descripcion">Archivo .xlsx</span>
+            </div>
+          </button>
+
+          <div class="exportar-separador"></div>
+          <div class="exportar-info">
+            Exportará <strong id="exportar-contador"></strong> registros
+          </div>
+
+        </div><!-- /exportar-panel -->
+      </div><!-- /exportar-contenedor -->
+
+
+      <!-- Dropdown: Filtro de fecha -->
+      <div class="filtro-fecha-contenedor">
+        <button class="boton boton--fecha" id="boton-fecha" onclick="alternarFecha()">
+          <svg viewBox="0 0 24 24" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span id="etiqueta-fecha">Fecha</span>
+        </button>
+
+        <!-- Panel de filtro de fecha -->
+        <div class="filtro-fecha-panel" id="filtro-fecha-panel">
+
+          <div class="filtro-fecha-panel__cabecera">
+            <span>Filtrar por fecha</span>
+            <button class="boton--restablecer" onclick="limpiarFechas()">Limpiar</button>
+          </div>
+
+          <div class="filtro-fecha-panel__cuerpo">
+            <div class="filtro-fecha-campo">
+              <label>Desde</label>
+              <input type="date" id="fecha-desde" oninput="aplicarFiltroDeFecha()" onchange="aplicarFiltroDeFecha()">
+            </div>
+            <div class="filtro-fecha-campo">
+              <label>Hasta</label>
+              <input type="date" id="fecha-hasta" oninput="aplicarFiltroDeFecha()" onchange="aplicarFiltroDeFecha()">
+            </div>
+          </div>
+
+          <div class="filtro-fecha-panel__pie">
+            <button class="boton boton--primario" style="width:100%;justify-content:center;"
+              onclick="aplicarFiltroDeFecha(); alternarFecha()">
+              Aplicar filtro
+            </button>
+          </div>
+
+        </div><!-- /filtro-fecha-panel -->
+      </div><!-- /filtro-fecha-contenedor -->
+
+
+      <!-- Botón: Nueva OF -->
+      <button class="boton boton--primario">
+        <svg viewBox="0 0 24 24" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
-        <span id="gt-date-label">Fecha</span>
+        Nueva OF
       </button>
 
-      <div class="gt-date-panel" id="gt-date-panel">
-        <div class="gt-date-head">
-          <span>Filtrar por fecha</span>
-          <button class="gt-col-reset" onclick="gtClearDates()">Limpiar</button>
-        </div>
-        <div class="gt-date-body">
-          <div class="gt-date-field">
-            <label>Desde</label>
-            <input type="date" id="gt-date-from" oninput="gtApplyDateFilter()">
+      <!-- Dropdown: Selector de columnas visibles -->
+      <div class="columnas-contenedor">
+        <button class="boton boton--trigger-columnas"
+          onclick="document.getElementById('columnas-panel').classList.toggle('abierto')"
+          title="Configurar columnas">
+          ···
+        </button>
+
+        <!-- Panel de columnas -->
+        <div class="columnas-panel" id="columnas-panel">
+          <div class="columnas-panel__cabecera">
+            <span>Columnas visibles</span>
+            <button class="boton--restablecer" onclick="restablecerColumnas()">Restablecer</button>
           </div>
-          <div class="gt-date-field">
-            <label>Hasta</label>
-            <input type="date" id="gt-date-to" oninput="gtApplyDateFilter()">
-          </div>
-        </div>
-      </div>
-    </div>
+          <!-- Lista generada dinámicamente por JS -->
+          <div class="columnas-panel__lista" id="columnas-lista"></div>
+        </div><!-- /columnas-panel -->
 
-    <a href="#" class="gt-btn gt-btn--primary">Nueva OF</a>
-  </div>
+      </div><!-- /columnas-contenedor -->
 
-  <div class="gt-table-wrap">
-    <table class="gt-table" id="gt-table">
-      <thead>
-        <tr>
-          <th data-col="of">OF</th>
-          <th data-col="ref">OF Referencia</th>
-          <th data-col="desc">Descripción</th>
-          <th data-col="cliente">Cliente</th>
-          <th data-col="tipo">Tipo</th>
-          <th data-col="proceso">Proceso</th>
-          <th data-col="maquina">Máquina</th>
-          <th data-col="estado">Estado</th>
-          <th data-col="fecha">Fecha Prog.</th>
-          <th data-col="ubicacion">Ubicación</th>
-          <th data-col="sobre">Sobre</th>
-          <th data-col="acciones">Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="gt-body">
-        <!-- Las filas se generan por JS -->
-      </tbody>
-    </table>
-  </div>
+    </div><!-- /tabla-barra-herramientas -->
 
-  <div class="gt-footer">
-    <div class="gt-footer-info" id="gt-footer-info"></div>
-    <div class="gt-pagination" id="gt-pagination"></div>
-  </div>
 
-</div>
+    <!-- ============================================================
+         ÁREA DE LA TABLA — Contenedor con scroll
+    ============================================================ -->
+    <div class="tabla-area-datos">
+      <table class="tabla-registros" id="tabla-registros">
 
-<script>
-    // Inyectar datos desde Django si existen
-    const GT_DATA = {{ grabados_json|safe|default:"[]" }};
-</script>
+        <thead>
+          <tr>
+            <th data-col="of">
+              OF
+              <svg viewBox="0 0 24 24" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+            </th>
+            <th data-col="ref">
+              OF Referencia
+              <svg viewBox="0 0 24 24" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+            </th>
+            <th data-col="desc">Descripción</th>
+            <th data-col="cliente">
+              Cliente
+              <svg viewBox="0 0 24 24" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+            </th>
+            <th data-col="tipo">Tipo de Grabado</th>
+            <th data-col="proceso">Proceso</th>
+            <th data-col="maquina">Máquina</th>
+            <th data-col="estado">Estado</th>
+            <th data-col="fecha">
+              Fecha Prog.
+              <svg viewBox="0 0 24 24" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+            </th>
+            <th data-col="ubicacion">Ubicación</th>
+            <th data-col="sobre">Sobre</th>
+            <th data-col="acciones">Acciones</th>
+          </tr>
+        </thead>
+
+        <!-- El cuerpo es generado dinámicamente por renderizarFilas() -->
+        <tbody id="tabla-cuerpo"></tbody>
+
+      </table>
+    </div><!-- /tabla-area-datos -->
+
+
+    <!-- ============================================================
+         PIE DE TABLA — Información y paginación
+    ============================================================ -->
+    <div class="tabla-pie">
+      <div class="tabla-pie__info" id="pie-info"></div>
+      <div class="tabla-pie__paginacion" id="pie-paginacion"></div>
+    </div><!-- /tabla-pie -->
+
+
+  </div><!-- /tabla-contenedor -->
+
+
+  
+
 <script src="{% static 'js/grabados_tabla.js' %}"></script>
 {% endblock %}
