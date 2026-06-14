@@ -126,3 +126,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 LOGIN_URL = 'core:login'
 LOGIN_REDIRECT_URL = 'core:dashboard'
 LOGOUT_REDIRECT_URL = 'core:login'
+
+
+# Ruta fija para el archivo de Programación 
+PLANI_EXCEL_PATH = r"D:\sistema\01- Cigar Rings\CR PLANNING.xlsm"

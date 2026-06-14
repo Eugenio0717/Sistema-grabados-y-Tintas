@@ -52,7 +52,7 @@
       box-shadow    : 0 1px 4px rgba(0, 0, 0, 0.05);
       display       : flex;
       flex-direction: column;
-      height        : calc(100vh - 48px); /* llena la pantalla menos el padding del body */
+      height        : calc(100vh - 110px); /* llena la pantalla menos el padding del body */
       overflow      : hidden;
     }
 

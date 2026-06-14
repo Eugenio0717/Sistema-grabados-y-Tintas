@@ -1,154 +1,86 @@
 
 /* ============================================================
-   Lógica para la Tabla PLANI (Configurada para tus columnas reales)
+   Lógica para la Tabla PLANI - SINCRONIZACIÓN AUTOMÁTICA
    ============================================================ */
 
-let WORKBOOK_ACTUAL = null;
-let DATOS_EXCEL_BRUTOS = [];
-let COLUMNAS_EXCEL = [];
 let DATOS_PLANI = [];
 let registrosFiltrados = [];
 let paginaActual = 1;
 const REGISTROS_POR_PAGINA = 15;
 
-/**
- * Diccionario de mapeo EXACTO basado en tus columnas (Actualizado)
- */
-const DICCIONARIO_MAPEO = {
-    of:          ['orden', 'of', 'nro'],
-    ref:         ['referencia', 'ref'],
-    cliente:     ['cliente', 'nombre'],
-    proceso:     ['proceso', 'operacion', 'metodo'],
-    horas:       ['horas proceso', 'horas'],
-    papel:       ['papel'],
-    formatos:    ['cantidad formatos', 'formatos'],
-    responsable: ['responsable']
-};
-
+// Función que dispara la sincronización desde el servidor
 function sincronizarConExcel() {
-    document.getElementById('input-excel').click();
-}
-
-function procesarArchivoExcel(event) {
-    const archivo = event.target.files[0];
-    if (!archivo) return;
-
-    const lector = new FileReader();
-    lector.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        WORKBOOK_ACTUAL = XLSX.read(data, { type: 'array' });
-        
-        const selectorHoja = document.getElementById('selector-hoja');
-        selectorHoja.innerHTML = '';
-
-        WORKBOOK_ACTUAL.SheetNames.forEach(nombre => {
-            const opcion = document.createElement('option');
-            opcion.value = nombre;
-            opcion.textContent = nombre;
-            selectorHoja.appendChild(opcion);
-        });
-
-        actualizarColumnasPorHoja();
-        document.getElementById('modal-mapeo').style.display = 'flex';
-    };
-    lector.readAsArrayBuffer(archivo);
-}
-
-function actualizarColumnasPorHoja() {
-    const nombreHoja = document.getElementById('selector-hoja').value;
-    const hoja = WORKBOOK_ACTUAL.Sheets[nombreHoja];
-    DATOS_EXCEL_BRUTOS = XLSX.utils.sheet_to_json(hoja);
+    const btn = document.getElementById('btn-sincronizar');
+    const originalText = btn.innerHTML;
     
-    if (DATOS_EXCEL_BRUTOS.length === 0) {
-        document.getElementById('contenedor-mapeo').innerHTML = '<p style="color:red">Esta hoja está vacía.</p>';
+    btn.innerHTML = 'Buscando archivo...';
+    btn.disabled = true;
+
+    fetch('/grabados/api/sincronizar/')
+        .then(response => response.json())
+        .then(res => {
+            if (res.status === 'ok') {
+                DATOS_PLANI = res.data;
+                registrosFiltrados = [...DATOS_PLANI];
+                paginaActual = 1;
+                renderizarTabla();
+                
+                // Mostrar botón de confirmar
+                document.getElementById('btn-confirmar').style.display = 'flex';
+                alert('Vista previa cargada desde el servidor. Revise los datos antes de confirmar.');
+            } else {
+                alert('Error: ' + res.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error de conexión con el servidor.');
+        })
+        .finally(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+}
+
+// Función para confirmar y guardar en la Base de Datos
+function confirmarGuardado() {
+    const btn = document.getElementById('btn-confirmar');
+    if (!DATOS_PLANI.length) return;
+
+    if (!confirm('¿Está seguro de que desea guardar estos ' + DATOS_PLANI.length + ' registros en la base de datos?')) {
         return;
     }
 
-    COLUMNAS_EXCEL = Object.keys(DATOS_EXCEL_BRUTOS[0]);
-    renderizarPrevisualizacion();
-    generarSelectoresMapeo();
-}
+    btn.innerHTML = 'Guardando...';
+    btn.disabled = true;
 
-function renderizarPrevisualizacion() {
-    const contenedor = document.getElementById('previsualizacion-excel');
-    const filasPreview = DATOS_EXCEL_BRUTOS.slice(0, 3);
-    let html = '<table style="width:100%; border-collapse:collapse;"><thead><tr style="background:#eee;">';
-    COLUMNAS_EXCEL.forEach(col => { html += `<th style="border:1px solid #ddd; padding:4px;">${col}</th>`; });
-    html += '</tr></thead><tbody>';
-    filasPreview.forEach(fila => {
-        html += '<tr>';
-        COLUMNAS_EXCEL.forEach(col => { html += `<td style="border:1px solid #ddd; padding:4px;">${fila[col] || ''}</td>`; });
-        html += '</tr>';
+    fetch('/grabados/api/confirmar/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            // El CSRF token se maneja con la cookie si es necesario, 
+            // pero usamos @csrf_exempt por simplicidad en este paso
+        },
+        body: JSON.stringify({ datos: DATOS_PLANI })
+    })
+    .then(response => response.json())
+    .then(res => {
+        if (res.status === 'ok') {
+            alert(res.message);
+            // Ocultar botón tras éxito
+            btn.style.display = 'none';
+        } else {
+            alert('Error al guardar: ' + res.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al procesar la solicitud.');
+    })
+    .finally(() => {
+        btn.innerHTML = '<svg viewBox="0 0 24 24" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Confirmar y Guardar en DB';
+        btn.disabled = false;
     });
-    html += '</tbody></table>';
-    contenedor.innerHTML = `<p style="margin:5px; font-weight:bold; color:#666;">Vista previa:</p>` + html;
-}
-
-function generarSelectoresMapeo() {
-    const contenedor = document.getElementById('contenedor-mapeo');
-    contenedor.innerHTML = '<p style="font-weight:bold; color:#2d8a3e; margin-bottom:15px;">Confirmar Asignación:</p>';
-
-    const camposRequeridos = [
-        { id: 'of', label: 'ORDEN' },
-        { id: 'ref', label: 'REFERENCIA' },
-        { id: 'cliente', label: 'CLIENTE' },
-        { id: 'proceso', label: 'PROCESO' },
-        { id: 'horas', label: 'HORAS PROCESO' },
-        { id: 'papel', label: 'PAPEL' },
-        { id: 'formatos', label: 'CANTIDAD FORMATOS' },
-        { id: 'responsable', label: 'RESPONSABLE' }
-    ];
-
-    camposRequeridos.forEach(campo => {
-        const fila = document.createElement('div');
-        fila.className = 'mapeo-fila';
-        let opciones = `<option value="">-- No importar --</option>`;
-        let encontrada = false;
-
-        COLUMNAS_EXCEL.forEach(col => {
-            const colLower = col.toLowerCase().trim();
-            const esMatch = DICCIONARIO_MAPEO[campo.id].some(keyword => colLower === keyword || colLower.includes(keyword));
-            const seleccionado = (esMatch && !encontrada) ? 'selected' : '';
-            if (esMatch) encontrada = true;
-            opciones += `<option value="${col}" ${seleccionado}>${col}</option>`;
-        });
-
-        fila.innerHTML = `
-            <label>${campo.label}:</label>
-            <select id="map-${campo.id}" style="${encontrada ? 'border-color:#2d8a3e; background:#f0fff4;' : ''}">${opciones}</select>
-        `;
-        contenedor.appendChild(fila);
-    });
-}
-
-function confirmarMapeo() {
-    const mapeo = {
-        of: document.getElementById('map-of').value,
-        ref: document.getElementById('map-ref').value,
-        cliente: document.getElementById('map-cliente').value,
-        proceso: document.getElementById('map-proceso').value,
-        horas: document.getElementById('map-horas').value,
-        papel: document.getElementById('map-papel').value,
-        formatos: document.getElementById('map-formatos').value,
-        responsable: document.getElementById('map-responsable').value
-    };
-
-    DATOS_PLANI = DATOS_EXCEL_BRUTOS.map(fila => ({
-        of: fila[mapeo.of] || '—',
-        ref: fila[mapeo.ref] || '—',
-        cliente: fila[mapeo.cliente] || '—',
-        proceso: fila[mapeo.proceso] || '—',
-        horas: fila[mapeo.horas] || '—',
-        papel: fila[mapeo.papel] || '—',
-        formatos: fila[mapeo.formatos] || '—',
-        responsable: fila[mapeo.responsable] || '—'
-    }));
-
-    registrosFiltrados = [...DATOS_PLANI];
-    paginaActual = 1;
-    renderizarTabla();
-    document.getElementById('modal-mapeo').style.display = 'none';
-    alert('¡Datos de producción cargados correctamente!');
 }
 
 function renderizarTabla() {
@@ -157,20 +89,20 @@ function renderizarTabla() {
     const tbody = document.getElementById('tabla-cuerpo');
     
     if (pagina.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="tabla-sin-resultados">Cargue una hoja para ver los datos.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="tabla-sin-resultados">Haga clic en "Actualizar" para ver la vista previa.</td></tr>';
         return;
     }
 
     tbody.innerHTML = pagina.map(reg => `
         <tr>
-            <td><strong>${reg.of}</strong></td>
-            <td>${reg.ref}</td>
-            <td>${reg.cliente}</td>
-            <td><span class="celda-estado estado--en-revision">${reg.proceso}</span></td>
-            <td>${reg.horas}</td>
-            <td>${reg.papel}</td>
-            <td>${reg.formatos}</td>
-            <td>${reg.responsable}</td>
+            <td><strong>${reg.of || '—'}</strong></td>
+            <td>${reg.referencia || '—'}</td>
+            <td>${reg.descripcion || '—'}</td>
+            <td>${reg.cliente || '—'}</td>
+            <td>${reg.tipo_grabado || '—'}</td>
+            <td><span class="celda-estado estado--en-revision">${reg.proceso || 'General'}</span></td>
+            <td>${reg.maquina || '—'}</td>
+            <td>${reg.fecha_programada || '—'}</td>
         </tr>
     `).join('');
     actualizarInfoPie();
@@ -178,12 +110,22 @@ function renderizarTabla() {
 
 function actualizarInfoPie() {
     const total = registrosFiltrados.length;
-    document.getElementById('pie-info').innerHTML = `Mostrando registros del Excel (Total: ${total})`;
+    const info = document.getElementById('pie-info');
+    if (info) {
+        info.innerHTML = `Vista Previa (Total: ${total} registros encontrados en Excel)`;
+    }
 }
 
-function cerrarModalMapeo() {
-    document.getElementById('modal-mapeo').style.display = 'none';
-    document.getElementById('input-excel').value = '';
-}
+// Búsqueda simple
+document.getElementById('buscador-input').addEventListener('input', function(e) {
+    const busqueda = e.target.value.toLowerCase();
+    registrosFiltrados = DATOS_PLANI.filter(reg => 
+        String(reg.of).toLowerCase().includes(busqueda) ||
+        String(reg.cliente).toLowerCase().includes(busqueda) ||
+        String(reg.referencia).toLowerCase().includes(busqueda)
+    );
+    paginaActual = 1;
+    renderizarTabla();
+});
 
 renderizarTabla();

@@ -12,4 +12,5 @@ urlpatterns = [
     # Endpoints de API
     path('api/registros/', views.api_obtener_registros, name='api_registros'),
     path('api/sincronizar/', views.sincronizar_plani, name='api_sincronizar'),
+    path('api/confirmar/', views.confirmar_sincronizacion, name='api_confirmar'),
 ]
